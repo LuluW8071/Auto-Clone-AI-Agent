@@ -49,7 +49,9 @@
    ```
 
 3. **Ollama Models**
-    Visit the [Ollama GitHub page](https://github.com/ollama/ollama) to explore and try out newer models. \
+
+   Visit the [Ollama GitHub page](https://github.com/ollama/ollama) to explore and try out newer models.
+   
     > Install ollama and run the model in terminal to download it.
     > Note that models with more parameters may consume more resources and have higher latency. For optimal use case, I chose 7B parameters model.
 
@@ -59,3 +61,10 @@
     llm1 = Ollama(model="mistral")
     llm2 = Ollama(model="llama3")
     ```
+    
+ 5. **Run Script**
+
+    ```python
+    python3 main.py
+    ```
+ 
