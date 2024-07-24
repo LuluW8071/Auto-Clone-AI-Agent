@@ -11,13 +11,14 @@ from prompts import context, code_parser_template
 from code_reader import code_reader
 from dotenv import load_dotenv
 import os
+import json
 import ast
 
 # Load environment variables from a .env file
 load_dotenv()
 
 # Initialize language model for general querying
-llm = Ollama(model="llama3", request_timeout=30.0)
+llm = Ollama(model="mistral", request_timeout=30.0)
 
 # Initialize document parser to process .pdf files
 parser = LlamaParse(result_type="markdown")
@@ -48,7 +49,7 @@ tools = [
 ]
 
 # Initialize a separate LLM for code generation
-code_llm = Ollama(model="codellama")
+code_llm = Ollama(model="llama3")
 
 # Create the ReActAgent with tools and the code generation LLM
 agent = ReActAgent.from_tools(tools, llm=code_llm, verbose=True, context=context)
@@ -76,29 +77,32 @@ while (prompt := input("Enter a prompt (q to quit): ")) != "q":
     # Retry loop for handling potential errors
     while retries < 3:
         try:
-            # Query the agent with the user input
+            # Query the agent with user input
             result = agent.query(prompt)
-            # Process the result through the output pipeline
+            # Process the result through output pipeline
             next_result = output_pipeline.run(response=result)
-            # Clean and parse the output
+            # Clean and parse output
             cleaned_json = ast.literal_eval(str(next_result).replace("assistant:", ""))
             break
         except Exception as e:
-            # Handle exceptions and retry if necessary
             retries += 1
             print(f"Error occurred, retry #{retries}:", e)
 
-    # If retries are exhausted, notify user
+    # If retries r exhausted, notify user
     if retries >= 3:
         print("Unable to process request, try again...")
         continue
 
-    # Output the generated code and description
+    # Output generated code
     print("Code generated")
     print(cleaned_json["code"])
     print("\n\nDescription:", cleaned_json["description"])
 
     filename = cleaned_json["filename"]
+
+    with open(os.path.join("output", filename), "w") as f:
+        json.dump(cleaned_json, f, indent=4)
+        print("Saved file", filename)
 
     # Attempt to save the generated code to a file
     try:
